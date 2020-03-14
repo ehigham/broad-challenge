@@ -32,16 +32,18 @@ If you have any questions along the way please do not hesitate to send them to
 dsde-engineering-hiring@broadinstitute.org.
 
 Your deliverables should include:
-relevant source code,
-a buildable and executable program that demonstrates all three of these functions
-working, along with documentation on how to build and run your program,
-any relevant supplementary files such as tests or documentation.
+- relevant source code,
+- a buildable and executable program that demonstrates all three of these
+functions working, along with documentation on how to build and run your
+program
+- any relevant supplementary files such as tests or documentation.
+
 When complete, share an accessible git repo or create a tarball or zip archive
 of your files and email it to dsde-engineering-hiring@broadinstitute.org.
 
 # Problem description
 Boston's transportation system, the MBTA (https://mbta.com/), has a
-website with APIs https://api-v3.mbta.com/docs/swagger/index.html.
+website with APIs https://api-v3.mbta-.com/docs/swagger/index.html.
 You will not need an API key, but you might get rate-limited without one.
 
 The MBTA's documentation https://api-v3.mbta.com/docs/swagger/index.html is
