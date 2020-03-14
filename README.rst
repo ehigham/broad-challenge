@@ -55,23 +55,26 @@ documentation. We advise you not to use these tools because they are heavyweight
 and unnecessary. Writing your own client code to interact directly with the APIs
 is most likely easier, and better demonstrates the skills we're interested in
 reviewing.
+
 ## Question 1
 Write a program that retrieves data representing all, what we'll call "subway"
 routes: "Light Rail" (type 0) and “Heavy Rail” (type 1). The program should list
 their “long names” on the console.
 Partial example of long name output: Red Line, Blue Line, Orange Line...
-There are two ways to filter results for subway-only routes. Think about the two options below
-and choose:
+There are two ways to filter results for subway-only routes. Think about the two
+options below and choose:
 1. https://api-v3.mbta.com/routes
 2. https://api-v3.mbta.com/routes?filter[type]=0,1
 Please document your decision and your reasons for it.
 
 ## Question 2
 Extend your program so it displays the following additional information.
-1. The name of the subway route with the most stops as well as a count of its stops.
-2. The name of the subway route with the fewest stops as well as a count of its stops.
-3. A list of the stops that connect two or more subway routes along with the relevant route
-names for each of those stops.
+1. The name of the subway route with the most stops as well as a count of its
+stops.
+2. The name of the subway route with the fewest stops as well as a count of its
+stops.
+3. A list of the stops that connect two or more subway routes along with the
+relevant route names for each of those stops.
 
 ## Question 3
 Extend your program again such that the user can provide any two stops on the
