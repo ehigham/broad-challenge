@@ -32,7 +32,7 @@ clean-test:
 	rm -f .coverage
 
 lint:
-	python -m pylint broad test
+	python -m pylint challenge test
 
 test:
 	python setup.py test
@@ -41,7 +41,7 @@ test-all:
 	tox
 
 coverage:
-	python -m coverage run --source broad setup.py test
+	python -m coverage run --source challenge setup.py test
 	python -m coverage report -m
 
 dist: clean
