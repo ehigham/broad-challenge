@@ -4,12 +4,12 @@
 
 import functools
 
-def identity(x):
+def identity(argument):
     """
     The identity function - `identity` takes one argument and returns that
     argument unchanged.
     """
-    return x
+    return argument
 
 def foreach(func, iterable):
     """
@@ -40,7 +40,7 @@ def foldr(func, state, iterable):
          sum = foldr(plus, 0, [1, 2, 3, 4])
     #    sum = (1 + (2 + (3 + (4 + 0))))
     """
-    return foldl(lambda a, b: func(b, a), state, iterable[::-1])
+    return foldl(lambda g, a: lambda b: g(func(a, b)), identity, iterable)(state)
 
 def compose(*functions):
     """
