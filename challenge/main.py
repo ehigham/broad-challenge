@@ -2,36 +2,51 @@
 
 from argparse import (Action, ArgumentParser)
 
-from .functional import (foreach, compose, length, sort, first, last)
-from .routes import (load_routes, long_name, get_stops)
+from .functional import (foreach, compose, length, sort, head, last)
+from .routes import (load_routes, route_long_name, num_stops)
 
-def list_names():
+def __print_route_info(route):
+    spec = "{name}, {n:d} stops"
+    print(spec.format(name=route_long_name(route), n=num_stops(route)))
+
+def __decode_selector(name):
+    return last if name == "longest" else head
+
+def list_routes():
     """Question 1: List the long names of all routes"""
-    foreach(compose(print, long_name), load_routes())
+    for name in map(route_long_name, load_routes()):
+        print(name)
 
-def most_stops():
+def print_route(selector):
     """
-    Question 2: The name of the subway route with the most stops as well as a
-    count of its stops.
+    Print the name of the route supplied by the selector, along with the number
+    of stops
     """
-    routes = sort(compose(length, get_stops), load_routes())
-    compose(print, long_name, first)(routes)
-    compose(print, long_name, last)(routes)
+    routes = sort(num_stops, load_routes())
+    __print_route_info(selector(routes))
 
 def main():
     """Entry point"""
-    parser = ArgumentParser(description="Broad Institute Coding Challenge")
-    parser.add_argument('--list',
-                        dest='execute',
-                        action='store_const',
-                        const=list_names,
+    parser = ArgumentParser(description='Broad Institute Coding Challenge')
+    parser.add_argument('-l',
+                        '--list-routes',
+                        dest='list_routes',
+                        action='store_true',
                         help='list all "Light" and "Heavy Rail" subway routes')
+    parser.add_argument('-p',
+                        '--print-route',
+                        dest="route_type",
+                        choices=['longest', 'shortest'],
+                        help='print the longest route and its number of stops')
+
     args = parser.parse_args()
-    if args.execute:
-        args.execute()
-        most_stops()
+    if args.list_routes:
+        list_routes()
+    elif args.route_type:
+        print_route(__decode_selector(args.route_type))
     else:
         parser.print_usage()
+
 
 if __name__ == "__main__":
     main()

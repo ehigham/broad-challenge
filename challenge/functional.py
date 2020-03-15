@@ -59,7 +59,7 @@ def length(sequence):
     """Return the number of elements in the `sequence`"""
     return len(sequence)
 
-def first(sequence):
+def head(sequence):
     """
     Get the first element in a sequence
     Example:
