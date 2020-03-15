@@ -2,8 +2,6 @@
 
 """Functional utilities"""
 
-import functools
-
 def identity(argument):
     """
     The identity function - `identity` takes one argument and returns that
@@ -40,7 +38,8 @@ def foldr(func, state, iterable):
          sum = foldr(plus, 0, [1, 2, 3, 4])
     #    sum = (1 + (2 + (3 + (4 + 0))))
     """
-    return foldl(lambda g, a: lambda b: g(func(a, b)), identity, iterable)(state)
+    chain = foldl(lambda g, a: lambda b: g(func(a, b)), identity, iterable)
+    return chain(state)
 
 def compose(*functions):
     """
@@ -49,3 +48,21 @@ def compose(*functions):
         h = compose(f, g)
     """
     return foldr(lambda f, g: lambda x: f(g(x)), identity, functions)
+
+def sort(comparator, iterable):
+    """
+    Sort the iterable with the specified comparator
+    """
+    return sorted(iterable, key=comparator)
+
+def length(sequence):
+    """Return the number of elements in the `sequence`"""
+    return len(sequence)
+
+def first(sequence):
+    """Get the first element in a sequence"""
+    return sequence[0]
+
+def last(sequence):
+    """Get the last element in a sequence"""
+    return sequence[-1]
