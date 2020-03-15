@@ -9,9 +9,6 @@ def __print_route_info(route):
     spec = "{name}, {n:d} stops"
     print(spec.format(name=route_long_name(route), n=num_stops(route)))
 
-def __decode_selector(name):
-    return last if name == "longest" else head
-
 def list_routes():
     """Question 1: List the long names of all routes"""
     for name in map(route_long_name, load_routes()):
@@ -19,11 +16,12 @@ def list_routes():
 
 def print_route(selector):
     """
-    Print the name of the route supplied by the selector, along with the number
-    of stops
+    Print the name of the route described by the selector, along with the number
+    of stops. Valid selectors are "longest" or "shortest"
     """
     routes = sort(num_stops, load_routes())
-    __print_route_info(selector(routes))
+    item = last if selector == "longest" else head
+    __print_route_info(item(routes))
 
 def main():
     """Entry point"""
@@ -43,7 +41,7 @@ def main():
     if args.list_routes:
         list_routes()
     elif args.route_type:
-        print_route(__decode_selector(args.route_type))
+        print_route(args.route_type)
     else:
         parser.print_usage()
 
