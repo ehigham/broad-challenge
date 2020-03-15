@@ -60,9 +60,17 @@ def length(sequence):
     return len(sequence)
 
 def first(sequence):
-    """Get the first element in a sequence"""
+    """
+    Get the first element in a sequence
+    Example:
+        assert first([1,2,3]) == 1
+    """
     return sequence[0]
 
 def last(sequence):
-    """Get the last element in a sequence"""
+    """
+    Get the last element in a sequence
+    Example:
+        assert last([1,2,3]) == 3
+    """
     return sequence[-1]

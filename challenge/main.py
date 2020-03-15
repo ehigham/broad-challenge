@@ -11,7 +11,8 @@ def list_names():
 
 def most_stops():
     """
-    Question 2: The name of the subway route with the most stops as well as a count of its stops.
+    Question 2: The name of the subway route with the most stops as well as a
+    count of its stops.
     """
     routes = sort(compose(length, get_stops), load_routes())
     compose(print, long_name, first)(routes)
