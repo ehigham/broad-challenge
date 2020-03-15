@@ -74,3 +74,15 @@ def last(sequence):
         assert last([1,2,3]) == 3
     """
     return sequence[-1]
+
+def empty(sequence):
+    """Test if the sequence is empty"""
+    return length(sequence) == 0
+
+def fst(pair):
+    """Return the first item in a pair"""
+    return pair[0]
+
+def snd(pair):
+    """Return the second item in a pair"""
+    return pair[1]

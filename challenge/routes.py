@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+""" Defines the API for a stop """
+
 import json
 import requests
 
@@ -15,7 +17,6 @@ def __on_bad_response(response):
     raise RuntimeError(msg)
 
 def __mbta_data_request(query):
-    """Send a request to the mbta api"""
     #pylint: disable=no-member
     response = requests.get(__URL + query)
     if response.status_code != requests.codes.ok:
@@ -24,12 +25,12 @@ def __mbta_data_request(query):
     payload = json.loads(response.text)
     return payload["data"]
 
+def __get_attribute(route, attr):
+    return route["attributes"][attr]
+
 def load_routes():
     """Query the mbta api for all type 0 and 1 routes"""
     return __mbta_data_request("/routes?filter[type]=0,1")
-
-def __get_attribute(route, attr):
-    return route["attributes"][attr]
 
 def route_long_name(route):
     """Get the `long_name` of a route"""
@@ -40,7 +41,7 @@ def route_id(route):
     return route["id"]
 
 def get_stops(route):
-    """Get the number of stops on this route"""
+    """Get a list of stops on this route"""
     if "stops" in route:
         return route["stops"]
 
