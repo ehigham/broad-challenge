@@ -1,18 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from functools import (reduce)
 from argparse import (Action, ArgumentParser)
 
+from .functional import (foreach, compose)
 from .routes import (load_routes, long_name)
-
-def foreach(func, iterable):
-    """Apply some function `func` on each item in an iterable"""
-    for item in iterable:
-        func(item)
-
-def compose(*functions):
-    """Compose two or more functions together"""
-    return reduce(lambda f, g: lambda x: f(g(x)), functions, id)
 
 def list_names():
     """Question 1: List the long names of all routes"""
