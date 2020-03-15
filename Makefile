@@ -32,7 +32,7 @@ clean-test:
 	rm -f .coverage
 
 lint:
-	python -m pylint challenge test
+	python -m pylint --exit-zero challenge test
 
 test:
 	python setup.py test
