@@ -85,13 +85,18 @@ To see all options, enter
 
 Options and Switches:
 
---list-routes                     Lists all "Light" and "Heavy" rail routes
---print-route {longest, shortest} Prints the selected route with its number of stops
---list-connections                Lists all stops that connect two or more routes,
-                                  along with the associated routes
---plan-route START FINISH         List the subway routes needed to travel from
-                                  the stop START to the stop FINISH (case insensitive).
-                                  Names with spaces should be enclosed in quotes.
+--list-routes
+Lists all "Light" and "Heavy" rail routes
+
+--print-route {longest, shortest}
+Prints the selected route with its number of stops
+
+--list-connections
+Lists all stops that connect two or more routes, along with the associated routes
+
+--plan-route START FINISH
+List the subway routes needed to travel from the stop START to the stop FINISH
+(case insensitive). Names with spaces should be enclosed in quotes.
 
 Example:
 
