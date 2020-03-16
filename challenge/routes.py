@@ -71,6 +71,7 @@ class Route:
 
     def id(self):
         """Return this route's unique id"""
+        #pylint: disable=invalid-name
         return self.__id
 
     def name(self):

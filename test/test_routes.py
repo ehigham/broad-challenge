@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from challenge.functional import (length, fmap, fst, compose, head, last, tail)
-from challenge.main import (RouteChange, find_connecting_stops, make_itinerary, make_stop_dictionary)
-from challenge.routes import (Stop, Route, load_routes, num_stops)
-
 import unittest
+
+from challenge.functional import (length, fmap, fst, compose, head, last, tail)
+from challenge.main import (RouteChange, find_connecting_stops,
+                            make_itinerary, make_stop_dictionary)
+from challenge.routes import (Stop, Route, load_routes, num_stops)
 
 class TestRouteFinding(unittest.TestCase):
 

@@ -58,16 +58,3 @@ def zip_with(f, xs, ys):
     instead of making a tuple.
     """
     return [f(a, b) for (a, b) in zip(xs, ys)]
-
-def flatten(xs):
-    """Convert a list of iterables into a flat list"""
-    return [y for ys in xs for y in ys]
-
-def on(f, g):
-    """
-    Return a binary function that applies unary function g to its
-    arguments, then calls binary function f with those values:
-        on(f, g) = \\x, y -> f(g(x), g(y))
-    """
-    # pylint: disable=invalid-name
-    return lambda x, y: f(g(x), g(y))

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from networkx import (MultiGraph, shortest_path)
-from .functional import (compose, flatten, fmap, fst, head, last, length, on, snd, tail, zip_with)
+from .functional import (compose, fmap, fst, head, last, length, snd, tail, zip_with)
 from .routes import (Stop, Route, load_routes, num_stops)
 
 def __print_route_info(route):
