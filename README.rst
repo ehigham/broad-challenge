@@ -1,6 +1,5 @@
-Broad DSP Engineering Interview Take-Home
-=========================================
-
+Broad DSP Engineering Challenge
+===============================
 
 What is the challenge?
 ---------------------
