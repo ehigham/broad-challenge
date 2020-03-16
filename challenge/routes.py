@@ -5,7 +5,7 @@
 import json
 import requests
 
-from .functional import (length)
+from .functional import (fmap, length)
 
 __URL = "https://api-v3.mbta.com"
 """URL of the request"""
@@ -28,27 +28,79 @@ def __mbta_data_request(query):
 def __get_attribute(route, attr):
     return route["attributes"][attr]
 
-def load_routes():
-    """Query the mbta api for all type 0 and 1 routes"""
-    return __mbta_data_request("/routes?filter[type]=0,1")
+class Stop:
+    """
+    A Stop is a location at which one may embark/disembark a public
+    transportation vehicle
+    """
+    #pylint: disable=redefined-builtin
+    def __init__(self, id, name):
+        self.__id = id
+        self.__name = name
 
-def route_long_name(route):
-    """Get the `long_name` of a route"""
+    def __hash__(self):
+        return hash(self.__id)
+
+    def __eq__(self, rhs):
+        return self.__id == rhs.id()
+
+    def name(self):
+        """Get the name of this stop"""
+        return self.__name
+
+    def id(self):
+        """Get the unique id of this stop"""
+        #pylint: disable=invalid-name
+        return self.__id
+
+class Route:
+    """
+    A Route is a named a list of subway Stops
+    """
+    #pylint: disable=redefined-builtin
+    def __init__(self, id, name, stops):
+        self.__id = id
+        self.__name = name
+        self.__stops = stops
+
+    def __eq__(self, another):
+        return self.__id == another.id()
+
+    def __hash__(self):
+        return hash(self.__id)
+
+    def name(self):
+        """Get the name of this Route"""
+        return self.__name
+
+    def stops(self):
+        """Get a list of Stops in this Route"""
+        return self.__stops
+
+def __route_long_name(route):
     return __get_attribute(route, "long_name")
 
-def route_id(route):
-    """Get the id of this route"""
+def __route_id(route):
     return route["id"]
 
-def get_stops(route):
-    """Get a list of stops on this route"""
-    if "stops" in route:
-        return route["stops"]
+def __make_stop_from_json(json_stop):
+    return Stop(json_stop["id"], __get_attribute(json_stop, "name"))
 
-    stops = __mbta_data_request("/stops?filter[route]=%s" % route_id(route))
-    route["stops"] = stops
-    return stops
+def __load_stops(json_route):
+    query = "/stops?filter[route]={id}".format(id=__route_id(json_route))
+    stops = __mbta_data_request(query)
+    return fmap(__make_stop_from_json, stops)
+
+def __make_route_from_json(json_route):
+    return Route(__route_id(json_route),
+                 __route_long_name(json_route),
+                 __load_stops(json_route))
+
+def load_routes():
+    """Query the mbta api for all type 0 and 1 routes"""
+    json_routes = __mbta_data_request("/routes?filter[type]=0,1")
+    return fmap(__make_route_from_json, json_routes)
 
 def num_stops(route):
     """Get the number of stops in the route"""
-    return length(get_stops(route))
+    return length(route.stops())
