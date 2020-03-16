@@ -2,9 +2,9 @@
 
 import unittest
 
-from challenge.functional import (length, fmap, fst, compose, head, last, tail)
-from challenge.main import (RouteChange, find_connecting_stops,
-                            make_itinerary, make_stop_dictionary)
+from challenge.functional import (length, fmap, first, compose, last, tail)
+from challenge.main import (find_connecting_stops,
+                            make_itinerary, make_stop_lookup_table)
 from challenge.routes import (Stop, Route, load_routes, num_stops)
 
 class TestRouteFinding(unittest.TestCase):
@@ -22,18 +22,18 @@ class TestRouteFinding(unittest.TestCase):
 
     def test_connecting_stops(self):
         connections = find_connecting_stops(self.routes)
-        stops = fmap(compose(Stop.name, fst), connections)
+        stops = fmap(compose(Stop.name, first), connections)
 
         # Ambiguous stop name - occurs on two lines without connection
-        self.assertNotIn("Saint Paul Street", stops)
+        self.assertNotIn('Saint Paul Street', stops)
 
     def test_longest_stortest_route(self):
         stops = sorted(self.routes, key=num_stops)
-        # longest
-        self.assertEqual(compose(Route.name, last)(stops), "Green Line B")
+        most_stops = compose(Route.name, last)
+        self.assertEqual(most_stops(stops), 'Green Line D')
 
-        #shortest
-        self.assertEqual(compose(Route.name, head)(stops), "Mattapan Trolley")
+        fewest_stops = compose(Route.name, first)
+        self.assertEqual(fewest_stops(stops), 'Mattapan Trolley')
 
     def test_simple_plan_route(self):
         start = Stop(0, 'a')
@@ -42,9 +42,9 @@ class TestRouteFinding(unittest.TestCase):
 
         routes = [Route(0, 'A', [start, middle]), Route(1, 'B', [middle, finish])]
         itin = make_itinerary(routes, start, finish)
-        expected = [RouteChange(start, head(routes)),
-                    RouteChange(middle, last(routes)),
-                    RouteChange(finish, None)]
+        expected = [(start, first(routes)),
+                    (middle, last(routes)),
+                    (finish, None)]
 
         self.assertListEqual(itin, expected)
 
@@ -60,29 +60,26 @@ class TestRouteFinding(unittest.TestCase):
                   Route(3, 'C', [Stop(-5, ''), half, three_quarter, Stop(-6, '')]),
                   Route(4, 'D', [Stop(-7, ''), three_quarter, Stop(-8, ''), finish])]
         itin = make_itinerary(routes, start, finish)
-        expected = [RouteChange(start, head(routes)),
-                    RouteChange(quarter, head(tail(routes))),
-                    RouteChange(half, head(tail(tail(routes)))),
-                    RouteChange(three_quarter, head(tail(tail(tail(routes))))),
-                    RouteChange(finish, None)]
+        expected = [(start, first(routes)),
+                    (quarter, first(tail(routes))),
+                    (half, first(tail(tail(routes)))),
+                    (three_quarter, last(routes)),
+                    (finish, None)]
 
         self.assertListEqual(itin, expected)
 
     def test_real_route(self):
-        stops = make_stop_dictionary(self.routes)
-        start = stops["prudential"]["stop"]
-        finish = stops["aquarium"]["stop"]
-        itin = make_itinerary(self.routes, start, finish)
+        stops = make_stop_lookup_table(self.routes)
+        start = stops['prudential']
+        finish = stops['aquarium']
+        itin = make_itinerary(self.routes, first(start), first(finish))
 
-        stop_name = lambda c: c.stop().name()
-        route_name = lambda c: c.route().name() if c.route() else ""
-
-        itin = fmap(lambda change: (stop_name(change), route_name(change)), itin)
-        self.assertListEqual(itin, [("Prudential", "Green Line E"),
-                                    ("Park Street", "Red Line"),
-                                    ("Downtown Crossing", "Orange Line"),
-                                    ("State", "Blue Line"),
-                                    ("Aquarium", "")])
+        itin = fmap(lambda x: (first(x).name(), last(x).name() if last(x) else ''), itin)
+        self.assertListEqual(itin, [('Prudential', 'Green Line E'),
+                                    ('Park Street', 'Red Line'),
+                                    ('Downtown Crossing', 'Orange Line'),
+                                    ('State', 'Blue Line'),
+                                    ('Aquarium', '')])
 
 if __name__ == '__main__':
     unittest.main()

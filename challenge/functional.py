@@ -20,37 +20,29 @@ def length(xs):
     """Return the number of elements in the list"""
     return len(xs)
 
-def head(lst):
+def first(xs):
     """
-    Get the first item in a list
+    Get the first item in a sequence
     Example:
         assert first([1,2,3]) == 1
     """
-    return lst[0]
+    return next(iter(xs))
 
-def tail(lst):
+def last(xs):
     """
-    Return the list without the first item
-    Example:
-        assert tail([1, 2, 3]) == [2, 3]
-    """
-    return lst[1:]
-
-def last(lst):
-    """
-    Get the last element in a list
+    Get the last element in a sequence
     Example:
         assert last([1,2,3]) == 3
     """
-    return lst[-1]
+    return xs[-1]
 
-def fst(pair):
-    """Return the first item in a pair"""
-    return pair[0]
-
-def snd(pair):
-    """Return the second item in a pair"""
-    return pair[1]
+def tail(xs):
+    """
+    Return the sequence without the first item
+    Example:
+        assert tail([1, 2, 3]) == [2, 3]
+    """
+    return xs[1:]
 
 def zip_with(f, xs, ys):
     """

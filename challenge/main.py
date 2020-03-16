@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
+from typing import (Dict, List, Set, Tuple)
 from networkx import (MultiGraph, shortest_path)
-from .functional import (compose, fmap, fst, head, last, length, snd, tail, zip_with)
+
+from .functional import (compose, fmap, first, length, last, tail, zip_with)
 from .routes import (Stop, Route, load_routes, num_stops)
 
 def __print_route_info(route):
-    spec = "{name}, {n:d} stops"
-    print(spec.format(name=route.name(), n=num_stops(route)))
+    print("{}, {:d} stops".format(route.name(), num_stops(route)))
 
 def __print_connection_info(stop, routes):
-    spec = "{name}, {routes}"
-    print(spec.format(name=stop, routes=routes))
+    print("{}, {}".format(stop, routes))
 
 def __make_stop_list(routes):
     stops = {}
@@ -20,19 +20,19 @@ def __make_stop_list(routes):
             if id_ not in stops:
                 stops[id_] = (stop, [])
 
-            snd(stops[id_]).append(route)
+            last(stops[id_]).append(route)
 
-    return list(stops.values())
+    return stops.values()
 
-def find_connecting_stops(routes):
+def find_connecting_stops(routes) -> List[Tuple[Stop, List[Route]]]:
     """
     Find all stops that connect more than one route.
     Return [Stop, [Route]]
     """
     stops = __make_stop_list(routes)
-    return filter(lambda p: length(snd(p)) > 1, stops)
+    return list(filter(lambda p: length(last(p)) > 1, stops))
 
-def make_stop_dictionary(routes):
+def make_stop_lookup_table(routes) -> Dict[str, Set[Stop]]:
     """
     Build a dictionary to look up the stop given the name in lower-case
     """
@@ -41,10 +41,8 @@ def make_stop_dictionary(routes):
         for stop in route.stops():
             name_ = stop.name().lower()
             if name_ not in stops:
-                stops[name_] = {'ambiguous': False, 'stop': stop}
-
-            found = stops[name_]
-            found["ambiguous"] = stop.id() != found["stop"].id()
+                stops[name_] = set()
+            stops[name_].add(stop)
 
     return stops
 
@@ -61,64 +59,38 @@ def __get_possible_route_segments(graph, path):
     # the start stop and `{routes}` is the set of all routes that could be
     # travelled via.
     edge_data = lambda a, b: graph.get_edge_data(a, b).values()
-    get_route = lambda data: data["route"]
+    get_route = lambda data: data['route']
     make_route_set = lambda a, b: set(map(get_route, edge_data(a, b)))
     make_journey_segment = lambda a, b: (a, make_route_set(a, b))
     return zip_with(make_journey_segment, path, tail(path))
 
-class RouteChange:
+def __print_change(stop, route):
+    print("{} ({})".format(stop.name(), route.name() if route else ""))
+
+def make_itinerary(routes, start, finish) -> List[Tuple[Stop, Route]]:
     """
-    A Change represents a stop in the itinerary where a different route
-    must be taken
-    """
-    def __init__(self, stop, route):
-        self.__stop = stop
-        self.__route = route
-
-    def __eq__(self, rhs):
-        return self.__stop == rhs.stop() and self.__route == rhs.route()
-
-    def stop(self):
-        """Get the stop at which this action should be performed"""
-        return self.__stop
-
-    def route(self):
-        """Get the route onto which a passenger should change"""
-        return self.__route
-
-def __make_change(segment):
-    return RouteChange(fst(segment), head(list(snd(segment))))
-
-def __print_change(change):
-    stop_name = change.stop().name()
-    route_name = change.route().name() if change.route() else ""
-    print("{stop} ({route})".format(stop=stop_name,
-                                    route=route_name))
-
-def make_itinerary(routes, start, finish):
-    """
-    Compute a path from start to finish and return
-    a [RouteChange], or itinerary
+    Compute a path from start to finish and return a list of Changes
     """
     graph = __make_route_graph(routes)
     path = shortest_path(graph, start, finish)
     segments = __get_possible_route_segments(graph, path)
 
-    current = __make_change(head(segments))
-    itinerary = [current]
-    for segment in tail(segments):
-        if current.route() not in snd(segment):
-            current = __make_change(segment)
-            itinerary.append(current)
+    current = None
+    itinerary = []
 
-    itinerary.append(RouteChange(finish, None))
+    for stop, choices in segments:
+        if current not in choices:
+            current = first(choices)
+            itinerary.append((stop, current))
+
+    itinerary.append((finish, None))
     return itinerary
 
 def __on_unknown_stop(name):
-    raise ValueError('Unknown stop "{name}"'.format(name=name))
+    raise ValueError('Unknown stop "{}"'.format(name))
 
 def __on_ambiguous_stop(name):
-    print('Warning: duplicate stop detected: "{name}"'.format(name=name.title()))
+    print('Warning: duplicate stop detected: "{}"'.format(name))
     print('Journey planner may be inaccurate')
 
 def list_routes():
@@ -132,7 +104,7 @@ def print_route(descriptor):
     of stops. Valid descriptor are "longest" or "shortest"
     """
     routes = sorted(load_routes(), key=num_stops)
-    selector = last if descriptor == "longest" else head
+    selector = last if descriptor == "longest" else first
     __print_route_info(selector(routes))
 
 def list_connections():
@@ -141,21 +113,23 @@ def list_connections():
     route names for each of 'those stops'
     """
     connections = find_connecting_stops(load_routes())
-    for (stop, routes) in sorted(connections, key=compose(Stop.name, fst)):
+    for (stop, routes) in sorted(connections, key=compose(Stop.name, first)):
         __print_connection_info(stop.name(), fmap(Route.name, routes))
 
 def plan_route(start, finish):
     """print the required routes to take to get from start to finish"""
     routes = load_routes()
-    stop_names = make_stop_dictionary(routes)
-    for terminus in [start, finish]:
-        if terminus.lower() not in stop_names:
-            __on_unknown_stop(terminus)
-        if stop_names[terminus.lower()]['ambiguous']:
-            # some stops have the same name - warn the user
-            __on_ambiguous_stop(terminus)
+    stop_names = make_stop_lookup_table(routes)
 
-    get_stop = lambda name: stop_names[name.lower()]['stop']
-    itinerary = make_itinerary(routes, get_stop(start), get_stop(finish))
-    for change in itinerary:
-        __print_change(change)
+    def validate(name):
+        if name.lower() not in stop_names:
+            __on_unknown_stop(name)
+
+        stops = stop_names[name.lower()]
+        if length(stops) > 1:
+            __on_ambiguous_stop(name)
+
+        return first(stops)
+
+    for (stop, route) in make_itinerary(routes, validate(start), validate(finish)):
+        __print_change(stop, route)
