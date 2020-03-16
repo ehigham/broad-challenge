@@ -27,6 +27,14 @@ class TestRouteFinding(unittest.TestCase):
         # Ambiguous stop name - occurs on two lines without connection
         self.assertNotIn("Saint Paul Street", stops)
 
+    def test_longest_stortest_route(self):
+        stops = sorted(self.routes, key=num_stops)
+        # longest
+        self.assertEqual(compose(Route.name, last)(stops), "Green Line B")
+
+        #shortest
+        self.assertEqual(compose(Route.name, head)(stops), "Mattapan Trolley")
+
     def test_simple_plan_route(self):
         start = Stop(0, 'a')
         middle = Stop(1, 'b')
