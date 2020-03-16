@@ -86,7 +86,7 @@ def __route_id(route):
 def __make_stop_from_json(json_stop):
     return Stop(json_stop["id"], __get_attribute(json_stop, "name"))
 
-def __load_stops(json_route):
+def __load_stops_for_route(json_route):
     query = "/stops?filter[route]={id}".format(id=__route_id(json_route))
     stops = __mbta_data_request(query)
     return fmap(__make_stop_from_json, stops)
@@ -94,10 +94,12 @@ def __load_stops(json_route):
 def __make_route_from_json(json_route):
     return Route(__route_id(json_route),
                  __route_long_name(json_route),
-                 __load_stops(json_route))
+                 __load_stops_for_route(json_route))
 
 def load_routes():
     """Query the mbta api for all type 0 and 1 routes"""
+    # Request that the server filter the results to limit the amount of
+    # data that gets sent back.
     json_routes = __mbta_data_request("/routes?filter[type]=0,1")
     return fmap(__make_route_from_json, json_routes)
 

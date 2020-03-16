@@ -10,22 +10,41 @@ def __print_route_info(route):
 
 def __print_connection_info(stop, routes):
     spec = "{name}, {routes}"
-    print(spec.format(name=stop, routes=fmap(Route.name, routes)))
+    print(spec.format(name=stop, routes=routes))
 
-def __make_stop_dictionary(routes):
+def __make_stop_list(routes):
     stops = {}
     for route in sorted(routes, key=Route.name):
         for stop in route.stops():
+            id_ = stop.id()
+            if id_ not in stops:
+                stops[id_] = (stop.name(), [])
+
+            snd(stops[id_]).append(route.name())
+
+    return list(stops.values())
+
+def __find_connecting_stops(routes):
+    stops = __make_stop_list(routes)
+    return filter(lambda p: length(snd(p)) > 1, stops)
+
+def __make_stop_dictionary(routes):
+    stops = {}
+    for route in routes:
+        for stop in route.stops():
             name_ = stop.name().lower()
             if name_ not in stops:
-                stops[name_] = {'stop': stop, 'routes': []}
-            stops[name_]['routes'].append(route)
+                stops[name_] = {'ambiguous': False, 'stop': stop, 'routes': []}
+
+            found = stops[name_]
+            found["ambiguous"] = stop.id() != found["stop"].id()
+
     return stops
 
 def __make_route_graph(routes):
     graph = MultiGraph()
     for route in routes:
-        make_route_segment = lambda src, dst: (src, dst, {'route': route.name()})
+        make_route_segment = lambda src, dst: (src, dst, {'route': route})
         segments = zip_with(make_route_segment, route.stops(), tail(route.stops()))
         graph.add_edges_from(segments)
     return graph
@@ -40,26 +59,53 @@ def __get_possible_route_segments(graph, path):
     make_journey_segment = lambda a, b: (a, make_route_set(a, b))
     return zip_with(make_journey_segment, path, tail(path))
 
+class RouteChange:
+    """
+    A Change represents a stop in the itinerary where a different route
+    must be taken
+    """
+    def __init__(self, stop, route):
+        self.__stop = stop
+        self.__route = route
+
+    def stop(self):
+        """Get the stop at which this action should be performed"""
+        return self.__stop
+
+    def route(self):
+        """Get the route onto which a passenger should change"""
+        return self.__route
+
+def __make_change(segment):
+    return RouteChange(fst(segment), snd(segment).pop())
+
+def __print_change(change):
+    stop_name = change.stop().name()
+    route_name = change.route().name() if change.route() else ""
+    print("{stop} ({route})".format(stop=stop_name,
+                                    route=route_name))
+
 def __compute_itinerary(routes, start, finish):
     graph = __make_route_graph(routes)
     path = shortest_path(graph, start, finish)
-    route_segments = __get_possible_route_segments(graph, path)
+    segments = __get_possible_route_segments(graph, path)
 
-    # fixed-point of successive intersections of the sets of possible routes
-    # At each point, we keep the start stop and take the intersection of the
-    # sets of viable routes to propagate commonality.
-    intersect = lambda a, b: (fst(b), on(set.intersection, snd)(a, b))
-    while any(length(snd(s)) > 1 for s in route_segments):
-        route_segments = zip_with(intersect, route_segments, tail(route_segments))
+    current = __make_change(head(segments))
+    itinerary = [current]
+    for segment in tail(segments):
+        if current.route() not in snd(segment):
+            current = __make_change(segment)
+            itinerary.append(current)
 
-    return fmap(lambda x: (fst(x).name(), head(flatten([snd(x)]))), route_segments)
+    itinerary.append(RouteChange(finish, None))
+    return itinerary
 
 def __on_unknown_stop(name):
     raise ValueError('Unknown stop "{name}"'.format(name=name))
 
-def __print_segment(segment):
-    print("{stop} ({route})".format(stop=fst(segment),
-                                    route=snd(segment)))
+def __on_ambiguous_stop(name):
+    print('Warning: duplicate stop detected: "{name}"'.format(name=name.title()))
+    print('Journey planner may be inaccurate')
 
 def list_routes():
     """Question 1: List the long names of all routes"""
@@ -80,9 +126,7 @@ def list_connections():
     Print all stops that connect two or more routes along with the relevant
     route names for each of 'those stops'
     """
-    stops = __make_stop_dictionary(load_routes())
-    connections = filter(lambda entry: length(entry["routes"]) > 1, stops.values())
-    connections = map(lambda x: (x["stop"].name(), x["routes"]), connections)
+    connections = __find_connecting_stops(load_routes())
     for (stop, routes) in sorted(connections, key=fst):
         __print_connection_info(stop, routes)
 
@@ -93,16 +137,11 @@ def plan_route(start, finish):
     for terminus in [start, finish]:
         if terminus.lower() not in stop_names:
             __on_unknown_stop(terminus)
+        if stop_names[terminus.lower()]['ambiguous']:
+            __on_ambiguous_stop(terminus)
 
     # use dijkstra to find the shortest path
-    get_stop = lambda name: stop_names[name.lower()]["stop"]
-    route = __compute_itinerary(routes, get_stop(start), get_stop(finish))
-
-    current = head(route)
-    __print_segment(current)
-    for segment in tail(route):
-        if snd(segment) != snd(current):
-            current = segment
-            __print_segment(segment)
-
-    __print_segment(last(route))
+    get_stop = lambda name: stop_names[name.lower()]['stop']
+    itinerary = __compute_itinerary(routes, get_stop(start), get_stop(finish))
+    for change in itinerary:
+        __print_change(change)
