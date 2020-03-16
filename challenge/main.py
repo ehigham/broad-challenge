@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from networkx import (MultiGraph, shortest_path)
-from .functional import (on, flatten, fmap, fst, head, last, length, snd, tail, zip_with)
-from .routes import (Route, load_routes, num_stops)
+from .functional import (compose, flatten, fmap, fst, head, last, length, on, snd, tail, zip_with)
+from .routes import (Stop, Route, load_routes, num_stops)
 
 def __print_route_info(route):
     spec = "{name}, {n:d} stops"
@@ -18,13 +18,17 @@ def __make_stop_list(routes):
         for stop in route.stops():
             id_ = stop.id()
             if id_ not in stops:
-                stops[id_] = (stop.name(), [])
+                stops[id_] = (stop, [])
 
-            snd(stops[id_]).append(route.name())
+            snd(stops[id_]).append(route)
 
     return list(stops.values())
 
-def __find_connecting_stops(routes):
+def find_connecting_stops(routes):
+    """
+    Find all stops that connect more than one route.
+    Return [Stop, [Route]]
+    """
     stops = __make_stop_list(routes)
     return filter(lambda p: length(snd(p)) > 1, stops)
 
@@ -68,6 +72,9 @@ class RouteChange:
         self.__stop = stop
         self.__route = route
 
+    def __eq__(self, rhs):
+        return self.__stop == rhs.stop() and self.__route == rhs.route()
+
     def stop(self):
         """Get the stop at which this action should be performed"""
         return self.__stop
@@ -77,7 +84,7 @@ class RouteChange:
         return self.__route
 
 def __make_change(segment):
-    return RouteChange(fst(segment), snd(segment).pop())
+    return RouteChange(fst(segment), head(list(snd(segment))))
 
 def __print_change(change):
     stop_name = change.stop().name()
@@ -85,7 +92,11 @@ def __print_change(change):
     print("{stop} ({route})".format(stop=stop_name,
                                     route=route_name))
 
-def __compute_itinerary(routes, start, finish):
+def make_itinerary(routes, start, finish):
+    """
+    Compute a path from start to finish and return
+    a [RouteChange], or itinerary
+    """
     graph = __make_route_graph(routes)
     path = shortest_path(graph, start, finish)
     segments = __get_possible_route_segments(graph, path)
@@ -126,9 +137,9 @@ def list_connections():
     Print all stops that connect two or more routes along with the relevant
     route names for each of 'those stops'
     """
-    connections = __find_connecting_stops(load_routes())
-    for (stop, routes) in sorted(connections, key=fst):
-        __print_connection_info(stop, routes)
+    connections = find_connecting_stops(load_routes())
+    for (stop, routes) in sorted(connections, key=compose(Stop.name, fst)):
+        __print_connection_info(stop.name(), fmap(Route.name, routes))
 
 def plan_route(start, finish):
     """print the required routes to take to get from start to finish"""
@@ -138,10 +149,10 @@ def plan_route(start, finish):
         if terminus.lower() not in stop_names:
             __on_unknown_stop(terminus)
         if stop_names[terminus.lower()]['ambiguous']:
+            # some stops have the same name - warn the user
             __on_ambiguous_stop(terminus)
 
-    # use dijkstra to find the shortest path
     get_stop = lambda name: stop_names[name.lower()]['stop']
-    itinerary = __compute_itinerary(routes, get_stop(start), get_stop(finish))
+    itinerary = make_itinerary(routes, get_stop(start), get_stop(finish))
     for change in itinerary:
         __print_change(change)

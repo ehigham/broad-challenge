@@ -69,6 +69,10 @@ class Route:
     def __hash__(self):
         return hash(self.__id)
 
+    def id(self):
+        """Return this route's unique id"""
+        return self.__id
+
     def name(self):
         """Get the name of this Route"""
         return self.__name

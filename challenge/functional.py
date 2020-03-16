@@ -10,6 +10,12 @@ def fmap(f, xs):
     """
     return list(map(f, xs))
 
+def compose(f, g):
+    """
+    Return a function that applies g to its argument and then f
+    """
+    return lambda x: f(g(x))
+
 def length(xs):
     """Return the number of elements in the list"""
     return len(xs)
