@@ -52,7 +52,7 @@ Getting the Sources
 
 broad-challenge can be downloaded using via git clone:
 
-    $ git clone https://gitub.com/ehigham/broad-challenge
+    $ git clone https://github.com/ehigham/broad-challenge.git
 
 For development, it's a good idea to set up a virtual environment (if you just
 want to run the code, you can skip this step)
