@@ -3,4 +3,5 @@
 broad.egg-info/
 build/
 dist/
+.coverage
 *.pyc

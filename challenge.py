@@ -6,7 +6,7 @@ from sys import (stderr)
 from challenge.main import (list_routes, print_route, list_connections, plan_route)
 
 def main():
-    """Entry point to the Coding Challenge"""
+    """Entry point to the Broad Institute Coding Challenge"""
     parser = ArgumentParser(description='Broad Institute Coding Challenge',
                             usage='challenge.py [options]')
     parser.add_argument('--list-routes',
