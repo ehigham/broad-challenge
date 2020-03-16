@@ -32,13 +32,16 @@ def find_connecting_stops(routes):
     stops = __make_stop_list(routes)
     return filter(lambda p: length(snd(p)) > 1, stops)
 
-def __make_stop_dictionary(routes):
+def make_stop_dictionary(routes):
+    """
+    Build a dictionary to look up the stop given the name in lower-case
+    """
     stops = {}
     for route in routes:
         for stop in route.stops():
             name_ = stop.name().lower()
             if name_ not in stops:
-                stops[name_] = {'ambiguous': False, 'stop': stop, 'routes': []}
+                stops[name_] = {'ambiguous': False, 'stop': stop}
 
             found = stops[name_]
             found["ambiguous"] = stop.id() != found["stop"].id()
@@ -144,7 +147,7 @@ def list_connections():
 def plan_route(start, finish):
     """print the required routes to take to get from start to finish"""
     routes = load_routes()
-    stop_names = __make_stop_dictionary(routes)
+    stop_names = make_stop_dictionary(routes)
     for terminus in [start, finish]:
         if terminus.lower() not in stop_names:
             __on_unknown_stop(terminus)

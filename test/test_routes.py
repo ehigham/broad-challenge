@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from challenge.functional import (length, fmap, fst, compose, head, last)
-from challenge.main import (RouteChange, find_connecting_stops, make_itinerary)
+from challenge.functional import (length, fmap, fst, compose, head, last, tail)
+from challenge.main import (RouteChange, find_connecting_stops, make_itinerary, make_stop_dictionary)
 from challenge.routes import (Stop, Route, load_routes, num_stops)
 
 import unittest
@@ -28,8 +28,9 @@ class TestRouteFinding(unittest.TestCase):
 
     def test_simple_plan_route(self):
         start = Stop(0, 'a')
-        finish = Stop(2, 'b')
-        middle = Stop(1, 'aa')
+        middle = Stop(1, 'b')
+        finish = Stop(2, 'c')
+
         routes = [Route(0, 'A', [start, middle]), Route(1, 'B', [middle, finish])]
         itin = make_itinerary(routes, start, finish)
         expected = [RouteChange(start, head(routes)),
@@ -38,6 +39,41 @@ class TestRouteFinding(unittest.TestCase):
 
         self.assertListEqual(itin, expected)
 
+
+    def test_more_elaborate_plan_route(self):
+        start = Stop(0, 'a')
+        quarter = Stop(1, 'b')
+        half = Stop(2, 'c')
+        three_quarter = Stop(4, 'd')
+        finish = Stop(3, 'e')
+        routes = [Route(0, 'A', [start, Stop(-1, ''), Stop(-2, ''), quarter]),
+                  Route(1, 'B', [quarter, Stop(-3, ''), half, Stop(-4, '')]),
+                  Route(3, 'C', [Stop(-5, ''), half, three_quarter, Stop(-6, '')]),
+                  Route(4, 'D', [Stop(-7, ''), three_quarter, Stop(-8, ''), finish])]
+        itin = make_itinerary(routes, start, finish)
+        expected = [RouteChange(start, head(routes)),
+                    RouteChange(quarter, head(tail(routes))),
+                    RouteChange(half, head(tail(tail(routes)))),
+                    RouteChange(three_quarter, head(tail(tail(tail(routes))))),
+                    RouteChange(finish, None)]
+
+        self.assertListEqual(itin, expected)
+
+    def test_real_route(self):
+        stops = make_stop_dictionary(self.routes)
+        start = stops["prudential"]["stop"]
+        finish = stops["aquarium"]["stop"]
+        itin = make_itinerary(self.routes, start, finish)
+
+        stop_name = lambda c: c.stop().name()
+        route_name = lambda c: c.route().name() if c.route() else ""
+
+        itin = fmap(lambda change: (stop_name(change), route_name(change)), itin)
+        self.assertListEqual(itin, [("Prudential", "Green Line E"),
+                                    ("Park Street", "Red Line"),
+                                    ("Downtown Crossing", "Orange Line"),
+                                    ("State", "Blue Line"),
+                                    ("Aquarium", "")])
 
 if __name__ == '__main__':
     unittest.main()
