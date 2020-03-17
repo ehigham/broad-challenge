@@ -20,8 +20,15 @@ class TestAlgorithmModule(unittest.TestCase):
         path = dijkstras_shortest_path(graph, 'A', 'B')
         self.assertListEqual(path, [])
 
+    def test_path_to_itself(self):
+        """A"""
+        graph = networkx.Graph()
+        graph.add_edges_from([('A', 'B'), ('B', 'C')])
+        path = dijkstras_shortest_path(graph, 'A', 'A')
+        self.assertListEqual(path, [])
+
     def test_simple_shortest_path(self):
-        """A -> B -> C """
+        """A - B - C """
         graph = networkx.Graph()
         graph.add_edges_from([('A', 'B'), ('B', 'C')])
         path = dijkstras_shortest_path(graph, 'A', 'C')
@@ -29,9 +36,9 @@ class TestAlgorithmModule(unittest.TestCase):
 
     def test_shortcut_path(self):
         """
-        A -> B -> C -> D -> E -> F
+        A - B - C - D - E - F
              \\            /
-                ---> G ---
+                --- G ---
         """
         graph = networkx.Graph()
         graph.add_edges_from([('A', 'B'), ('B', 'C'), ('C', 'D'), ('D', 'E'), ('E', 'F')])
@@ -41,9 +48,9 @@ class TestAlgorithmModule(unittest.TestCase):
 
     def test_cyclic_graph_path(self):
         """
-        A -> B -> C -> D -> E
-             |    |
-             <- G<-
+        A - B - C - D - E
+            |       |
+              - G -
         """
         graph = networkx.Graph()
         graph.add_edges_from([('A', 'B'), ('B', 'C'), ('C', 'D'), ('D', 'E')])
