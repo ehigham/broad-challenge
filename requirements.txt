@@ -1,5 +1,2 @@
-coverage>=5.0
 networkx>=2.4
-pylint==2.4.4
 requests>=2.0
-wheel>=0.34

@@ -30,7 +30,7 @@ class TestRouteFinding(unittest.TestCase):
     def test_longest_stortest_route(self):
         stops = sorted(self.routes, key=num_stops)
         most_stops = compose(Route.name, last)
-        self.assertEqual(most_stops(stops), 'Green Line D')
+        self.assertEqual(most_stops(stops), 'Green Line B')
 
         fewest_stops = compose(Route.name, first)
         self.assertEqual(fewest_stops(stops), 'Mattapan Trolley')
@@ -70,16 +70,15 @@ class TestRouteFinding(unittest.TestCase):
 
     def test_real_route(self):
         stops = make_stop_lookup_table(self.routes)
-        start = stops['prudential']
-        finish = stops['aquarium']
+        start = stops['fenway']
+        finish = stops['milton']
         itin = make_itinerary(self.routes, first(start), first(finish))
 
         itin = fmap(lambda x: (first(x).name(), last(x).name() if last(x) else ''), itin)
-        self.assertListEqual(itin, [('Prudential', 'Green Line E'),
+        self.assertListEqual(itin, [('Fenway', 'Green Line D'),
                                     ('Park Street', 'Red Line'),
-                                    ('Downtown Crossing', 'Orange Line'),
-                                    ('State', 'Blue Line'),
-                                    ('Aquarium', '')])
+                                    ('Ashmont', 'Mattapan Trolley'),
+                                    ('Milton', '')])
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from collections import deque
-from heapq import (heappop, heappush)
-from sys import maxsize
-from typing import (Dict, List, Set, Tuple)
-from networkx import (MultiGraph)
+"""Defines solutions to the challenge questions"""
 
+from typing import (Dict, List, Set, Tuple)
+from networkx import MultiGraph
+
+from .algorithm import dijkstras_shortest_path
 from .functional import (compose, fmap, first, length, last, tail, zip_with)
 from .routes import (Stop, Route, load_routes, num_stops)
 
@@ -62,54 +62,6 @@ def __get_possible_route_segments(graph, path):
     make_route_set = lambda a, b: set(map(get_route, edge_data(a, b)))
     make_journey_segment = lambda a, b: (a, make_route_set(a, b))
     return zip_with(make_journey_segment, path, tail(path))
-
-def dijkstras_shortest_path(graph, start, finish):
-    """
-    Implementation of dijkstra's famous shortest path algorithm.
-    """
-    # The bumf suggested we don't use a library to do everything for us, and
-    # so using networkx `shortest_path` is a little bit cheaky.
-
-    class Item(tuple):
-        """Used to define < (less than) for use with heapq"""
-        def __new__(cls, priority, vertex):
-            return tuple.__new__(Item, (priority, vertex))
-
-        def __lt__(self, rhs):
-            return first(self) < first(rhs)
-
-        def __repr__(self):
-            priority, vertex = self
-            return 'Item({:d}, {})'.format(priority, vertex)
-
-    distances = {vertex: maxsize for vertex in graph.nodes}
-    previous = {vertex: None for vertex in graph.nodes}
-    priority_queue = [Item(0, start)]
-
-    while priority_queue:
-        # pop the first vertex with the smallest distance
-        distance, vertex = heappop(priority_queue)
-
-        # only visit vertices we haven't seen yet
-        if distances[vertex] != maxsize:
-            continue
-
-        # visit all unseen neighbours and update their distance
-        distances[vertex] = distance
-        for neighbour in graph.neighbors(vertex):
-            if distances[neighbour] == maxsize:
-                heappush(priority_queue, Item(distance + 1, neighbour))
-                previous[neighbour] = vertex
-
-    # Backtrack through the `previous` list to build the path
-    path = deque()
-    while previous[finish]:
-        path.appendleft(finish)
-        finish = previous[finish]
-    if path:
-        path.appendleft(finish)
-
-    return list(path)
 
 def __print_change(stop, route):
     print("{} ({})".format(stop.name(), route.name() if route else ""))

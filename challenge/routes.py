@@ -111,6 +111,6 @@ def load_routes() -> List[Route]:
     json_routes = __mbta_data_request('/routes?filter[type]=0,1')
     return fmap(__make_route_from_json, json_routes)
 
-def num_stops(route) -> str:
+def num_stops(route) -> int:
     """Get the number of stops in the route"""
     return length(route.stops())
