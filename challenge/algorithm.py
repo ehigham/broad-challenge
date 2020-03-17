@@ -46,6 +46,11 @@ def dijkstras_shortest_path(graph, start, finish):
 
         # visit all unseen adjacent nodes and update their distance
         distances[node] = (distance, previous)
+
+        # we've found a shortest path
+        if node == finish:
+            break
+
         for neighbor in graph.neighbors(node):
             if first(distances[neighbor]) == maxsize:
                 heappush(priority_queue, Item(distance + 1, neighbor, node))
