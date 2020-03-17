@@ -48,19 +48,19 @@ def make_stop_lookup_table(routes) -> Dict[str, Set[Stop]]:
 def __make_route_graph(routes):
     graph = MultiGraph()
     for route in routes:
+        # assume each segment has weight 1 -  we could estimate edge weight via
+        # distance bewteen stops (we have location information), but we have
+        # no information to tell us how fast any particular service is.
         make_route_segment = lambda src, dst: (src, dst, {'route': route})
         segments = zip_with(make_route_segment, route.stops(), tail(route.stops()))
         graph.add_edges_from(segments)
     return graph
 
 def __get_possible_route_segments(graph, path):
-    # A segment is the pair (name, {routes}) where `name` is the name of
-    # the start stop and `{routes}` is the set of all routes that could be
-    # travelled via.
+    """Get the set of possible routes we could take to go between stops"""
     edge_data = lambda a, b: graph.get_edge_data(a, b).values()
-    get_route = lambda data: data['route']
-    make_route_set = lambda a, b: set(map(get_route, edge_data(a, b)))
-    make_journey_segment = lambda a, b: (a, make_route_set(a, b))
+    routes_between = lambda a, b: map(lambda x: x['route'], edge_data(a, b))
+    make_journey_segment = lambda a, b: (a, set(routes_between(a, b)))
     return zip_with(make_journey_segment, path, tail(path))
 
 def __print_change(stop, route):
@@ -71,6 +71,10 @@ def make_itinerary(routes, start, finish) -> List[Tuple[Stop, Route]]:
     Compute a path from start to finish and return a list of Changes
     """
     graph = __make_route_graph(routes)
+
+    # I'm not sure dijkstra is really what we want here. I don't think people
+    # mind a few extra stops for a direct service. A nicer algorithm would be
+    # minimize the number of changes within some journey time
     path = dijkstras_shortest_path(graph, start, finish)
     segments = __get_possible_route_segments(graph, path)
 
