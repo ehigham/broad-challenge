@@ -67,7 +67,7 @@ def __get_possible_route_segments(graph, path):
     make_journey_segment = lambda a, b: (a, make_route_set(a, b))
     return zip_with(make_journey_segment, path, tail(path))
 
-def dijkstra_shortest_path(graph, start, finish):
+def dijkstras_shortest_path(graph, start, finish):
     """
     Implementation of dijkstra's famous shortest path algorithm.
     """
@@ -123,7 +123,7 @@ def make_itinerary(routes, start, finish) -> List[Tuple[Stop, Route]]:
     Compute a path from start to finish and return a list of Changes
     """
     graph = __make_route_graph(routes)
-    path = dijkstra_shortest_path(graph, start, finish)
+    path = dijkstras_shortest_path(graph, start, finish)
     segments = __get_possible_route_segments(graph, path)
 
     current = None
