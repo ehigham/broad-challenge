@@ -15,7 +15,11 @@ def __print_route_info(route):
 def __print_connection_info(stop, routes):
     print("{}, {}".format(stop, routes))
 
-def __make_stop_list(routes):
+def find_connecting_stops(routes) -> List[Tuple[Stop, List[Route]]]:
+    """
+    Find all stops that connect more than one route.
+    Return [Stop, [Route]]
+    """
     stops = {}
     for route in sorted(routes, key=Route.name):
         for stop in route.stops():
@@ -25,15 +29,7 @@ def __make_stop_list(routes):
 
             last(stops[id_]).append(route)
 
-    return stops.values()
-
-def find_connecting_stops(routes) -> List[Tuple[Stop, List[Route]]]:
-    """
-    Find all stops that connect more than one route.
-    Return [Stop, [Route]]
-    """
-    stops = __make_stop_list(routes)
-    return list(filter(lambda p: length(last(p)) > 1, stops))
+    return list(filter(lambda p: length(last(p)) > 1, stops.values()))
 
 def make_stop_lookup_table(routes) -> Dict[str, Set[Stop]]:
     """
