@@ -24,11 +24,12 @@ def main():
                         'along with the relevant route names for each of ' +
                         'those stops')
     parser.add_argument('--plan-route',
-                        nargs=2,
-                        metavar=('START', 'FINISH'),
-                        dest='startfinish',
+                        nargs=3,
+                        metavar=('START', 'FINISH', 'AVOID'),
+                        dest='startfinishavoid',
                         help='List the subway routes needed to travel from ' +
-                        'the stop START to the stop FINISH.')
+                        'the stop START to the stop FINISH, avoiding route ' +
+                        'AVOID.')
 
     args = parser.parse_args()
     if args.list_all_roots:
@@ -37,8 +38,8 @@ def main():
         print_route(args.route_type)
     elif args.list_all_connections:
         list_connections()
-    elif args.startfinish:
-        plan_route(*args.startfinish)
+    elif args.startfinishavoid:
+        plan_route(*args.startfinishavoid)
     else:
         parser.print_usage()
 

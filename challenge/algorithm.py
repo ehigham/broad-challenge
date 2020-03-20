@@ -31,7 +31,8 @@ def dijkstras_shortest_path(graph, start, finish):
             return 'Item({:d}, \'{}\', \'{}\')'.format(priority, node, previous)
 
     if start not in graph or finish not in graph:
-        raise ValueError('Terminals must be members of Graph.nodes')
+        msg = f'No route possible bewteen {start.name()} and {finish.name()}'
+        raise ValueError(msg)
 
     distances = {node: (maxsize, None) for node in graph.nodes}
     priority_queue = [Item(0, start, None)]

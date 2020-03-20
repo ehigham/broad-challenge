@@ -4,7 +4,7 @@ import unittest
 
 from challenge.functional import (length, fmap, first, compose, last, tail)
 from challenge.main import (find_connecting_stops,
-                            make_itinerary, make_stop_lookup_table)
+                            make_itinerary, make_stop_lookup_table, remove_route)
 from challenge.routes import (Stop, Route, load_routes, num_stops)
 
 class TestRouteFinding(unittest.TestCase):
@@ -79,6 +79,21 @@ class TestRouteFinding(unittest.TestCase):
                                     ('Park Street', 'Red Line'),
                                     ('Ashmont', 'Mattapan Trolley'),
                                     ('Milton', '')])
+
+    def test_invalid_route_name(self):
+        with self.assertRaises(ValueError):
+            remove_route(self.routes, 'George')
+
+
+    def test_removing_route(self):
+        routes = remove_route(self.routes, 'Red Line')
+        stops = make_stop_lookup_table(self.routes)
+        start = stops['davis']
+        finish = stops['harvard']
+
+        with self.assertRaises(ValueError):
+            make_itinerary(routes, first(start), first(finish))
+
 
 if __name__ == '__main__':
     unittest.main()

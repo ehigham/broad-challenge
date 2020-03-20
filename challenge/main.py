@@ -76,8 +76,11 @@ def make_itinerary(routes, start, finish) -> List[Tuple[Stop, Route]]:
     # mind a few extra stops for a direct service. A nicer algorithm would be
     # minimize the number of changes within some journey time
     path = dijkstras_shortest_path(graph, start, finish)
-    segments = __get_possible_route_segments(graph, path)
 
+    if length(path) == 0:
+        __on_no_such_route(start, finish)
+
+    segments = __get_possible_route_segments(graph, path)
     current = None
     itinerary = []
 
@@ -91,6 +94,13 @@ def make_itinerary(routes, start, finish) -> List[Tuple[Stop, Route]]:
 
 def __on_unknown_stop(name):
     raise ValueError('Unknown stop "{}"'.format(name))
+
+def __on_no_such_route(start, finish):
+    msg = f'Cannot find path between "{start.name()}" and "{finish.name()}"'
+    raise ValueError(msg)
+
+def __on_unknown_route_name(name):
+    raise ValueError(f'No such route name: "{name}"')
 
 def __on_ambiguous_stop(name):
     print('Warning: duplicate stop detected: "{}"'.format(name))
@@ -119,7 +129,16 @@ def list_connections():
     for stop, routes in sorted(connections, key=compose(Stop.name, first)):
         __print_connection_info(stop.name(), fmap(Route.name, routes))
 
-def plan_route(start, finish):
+def remove_route(routes, route_name):
+    if not route_name:
+        return routes
+
+    if route_name.lower() not in map(compose(str.lower, Route.name), routes):
+        __on_unknown_route_name(route_name)
+
+    return [item for item in routes if item.name().lower() != route_name.lower()]
+
+def plan_route(start, finish, avoid = ''):
     """print the required routes to take to get from start to finish"""
     routes = load_routes()
     stop_names = make_stop_lookup_table(routes)
@@ -134,5 +153,7 @@ def plan_route(start, finish):
 
         return first(stops)
 
+    # hard code removal of the red line
+    routes = remove_route(routes, avoid)
     for stop, route in make_itinerary(routes, validate(start), validate(finish)):
         __print_change(stop, route)
